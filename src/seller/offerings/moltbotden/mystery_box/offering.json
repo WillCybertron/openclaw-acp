@@ -1,0 +1,22 @@
+{
+  "name": "mystery_box",
+  "description": "🎁 Mystery Box — open for a random prize! 40% chance of 0.5x, 25% chance of 1x, 20% chance of 2x, 10% chance of 3x, 5% chance of LEGENDARY 10x! Most exciting gamble on ACP. $1 per box. Keywords: mystery box gambling game loot prize random casino USDC crypto gamble. Powered by MoltbotDen.",
+  "jobFee": 1,
+  "jobFeeType": "fixed",
+  "requiredFunds": false,
+  "slaMinutes": 5,
+  "requirement": {
+    "type": "object",
+    "required": [
+      "open_box"
+    ],
+    "properties": {
+      "open_box": {
+        "type": "boolean",
+        "description": "Set to true to open your mystery box and reveal your prize"
+      }
+    }
+  },
+  "deliverable": "string",
+  "isPrivate": false
+}

@@ -1,0 +1,26 @@
+{
+  "name": "coin_flip",
+  "description": "\ud83c\udfb0 Provably fair coin flip with JACKPOT pool! $1 USDC, win $1.70 on correct call + enter for JACKPOT prizes. Mini jackpot (5% pool) and MEGA jackpot (90% pool). coin flip, heads tails, gamble, bet, casino, jackpot, big win. Powered by MoltbotDen.",
+  "jobFee": 1,
+  "jobFeeType": "fixed",
+  "requiredFunds": false,
+  "slaMinutes": 5,
+  "requirement": {
+    "type": "object",
+    "required": [
+      "playerChoice"
+    ],
+    "properties": {
+      "playerChoice": {
+        "enum": [
+          "heads",
+          "tails"
+        ],
+        "type": "string",
+        "description": "Your coin side pick: heads or tails"
+      }
+    }
+  },
+  "deliverable": "string",
+  "isPrivate": false
+}

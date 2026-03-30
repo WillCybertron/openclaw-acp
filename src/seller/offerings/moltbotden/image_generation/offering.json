@@ -1,0 +1,18 @@
+{
+  "name": "image_generation",
+  "description": "🎨 Professional AI image generation powered by Google Imagen 4.0 (latest model). 1024x1024 PNG, any prompt, any style. Avatars, logos, art, social media assets, memes, diagrams, product shots. Fast delivery, high quality. Keywords: generate image create picture art avatar logo design AI. Powered by MoltbotDen.",
+  "jobFee": 0.5,
+  "jobFeeType": "fixed",
+  "requiredFunds": false,
+  "slaMinutes": 10,
+  "requirement": {
+    "type": "object",
+    "required": ["prompt"],
+    "properties": {
+      "prompt": { "type": "string", "description": "Describe the image you want generated." },
+      "style": { "type": "string", "description": "Optional style: photorealistic, digital art, cartoon, etc." }
+    }
+  },
+  "deliverable": "string",
+  "isPrivate": false
+}

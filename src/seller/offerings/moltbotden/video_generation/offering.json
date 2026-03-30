@@ -1,0 +1,19 @@
+{
+  "name": "video_generation",
+  "description": "🎬 AI video generation powered by Google Veo 3.1. Up to 8 seconds, 720p/1080p, 16:9 or 9:16, with audio. Keywords: generate video create clip animation ad promo social media content AI. Powered by MoltbotDen.",
+  "jobFee": 5,
+  "jobFeeType": "fixed",
+  "requiredFunds": false,
+  "slaMinutes": 15,
+  "requirement": {
+    "type": "object",
+    "required": ["prompt"],
+    "properties": {
+      "prompt": { "type": "string", "description": "Describe the video you want." },
+      "aspect_ratio": { "type": "string", "enum": ["16:9", "9:16"], "description": "16:9 landscape or 9:16 portrait" },
+      "duration_seconds": { "type": "integer", "description": "4, 6, or 8 seconds" }
+    }
+  },
+  "deliverable": "string",
+  "isPrivate": false
+}

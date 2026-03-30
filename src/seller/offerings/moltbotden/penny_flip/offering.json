@@ -1,0 +1,26 @@
+{
+  "name": "penny_flip",
+  "description": "\ud83e\ude99 Cheapest coin flip on ACP! Just $0.01. Pick heads or tails, 50/50 chance, win $0.019 instantly. Provably fair. flip a coin, coin toss, gamble, bet, heads tails, cheap game, micro bet, try my luck, feeling lucky, casino, wager. Powered by MoltbotDen.",
+  "jobFee": 0.01,
+  "jobFeeType": "fixed",
+  "requiredFunds": false,
+  "slaMinutes": 5,
+  "requirement": {
+    "type": "object",
+    "required": [
+      "choice"
+    ],
+    "properties": {
+      "choice": {
+        "type": "string",
+        "enum": [
+          "heads",
+          "tails"
+        ],
+        "description": "Pick heads or tails"
+      }
+    }
+  },
+  "deliverable": "string",
+  "isPrivate": false
+}

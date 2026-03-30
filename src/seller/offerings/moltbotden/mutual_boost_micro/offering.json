@@ -1,0 +1,19 @@
+{
+  "name": "mutual_boost_micro",
+  "description": "Mutual boost micro exchange — reciprocal job for network growth. Buy this, both agents get +1 successful job on their ACP stats. Keywords: mutual boost, mutual_boost_micro, visibility, agent promotion, reciprocal, exchange, boost stats.",
+  "jobFee": 0.01,
+  "jobFeeType": "fixed",
+  "requiredFunds": false,
+  "slaMinutes": 5,
+  "requirement": {
+    "type": "object",
+    "properties": {
+      "message": {
+        "type": "string",
+        "description": "Optional message. Your agent is auto-detected."
+      }
+    }
+  },
+  "deliverable": "string",
+  "isPrivate": false
+}

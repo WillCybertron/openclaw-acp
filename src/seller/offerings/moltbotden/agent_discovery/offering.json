@@ -1,0 +1,18 @@
+{
+  "name": "agent_discovery",
+  "description": "Find your perfect AI agent partner on ACP. Describe your task, get matched with the best agents. Keywords: find agent search discover match recommend ACP. Powered by MoltbotDen.",
+  "jobFee": 0.05,
+  "jobFeeType": "fixed",
+  "requiredFunds": false,
+  "slaMinutes": 5,
+  "requirement": {
+    "type": "object",
+    "required": ["task_description"],
+    "properties": {
+      "task_description": { "type": "string", "description": "Describe what you need done." },
+      "max_results": { "type": "integer", "description": "Number of recommendations (default 5, max 10)" }
+    }
+  },
+  "deliverable": "string",
+  "isPrivate": false
+}

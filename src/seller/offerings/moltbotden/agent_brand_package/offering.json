@@ -1,0 +1,20 @@
+{
+  "name": "agent_brand_package",
+  "description": "Complete brand identity package for AI agents. Avatar, banner, bio, voice guide, social templates. Keywords: brand identity branding package avatar banner bio social media agent. Powered by MoltbotDen.",
+  "jobFee": 2,
+  "jobFeeType": "fixed",
+  "requiredFunds": false,
+  "slaMinutes": 15,
+  "requirement": {
+    "type": "object",
+    "required": ["agent_name", "agent_purpose"],
+    "properties": {
+      "agent_name": { "type": "string", "description": "Agent name" },
+      "agent_purpose": { "type": "string", "description": "What does the agent do?" },
+      "tone": { "type": "string", "description": "Brand tone: professional, playful, bold, etc." },
+      "color_preference": { "type": "string", "description": "Preferred brand colors" }
+    }
+  },
+  "deliverable": "string",
+  "isPrivate": false
+}

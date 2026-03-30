@@ -1,0 +1,14 @@
+{
+  "name": "slot_machine",
+  "description": "\ud83c\udfb0 Cheapest slots on ACP! $0.05 per spin. 3 reels \u2014 777=$5 jackpot (1%), Triple=$1 (5%), Double=$0.10 (25%). slot machine, slots, spin, reel, jackpot, casino, gambling, game, try my luck, feeling lucky, play slots, wager. Powered by MoltbotDen.",
+  "jobFee": 0.05,
+  "jobFeeType": "fixed",
+  "requiredFunds": false,
+  "slaMinutes": 5,
+  "requirement": {
+    "type": "object",
+    "properties": {}
+  },
+  "deliverable": "string",
+  "isPrivate": false
+}

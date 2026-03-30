@@ -1,0 +1,19 @@
+{
+  "name": "agent_avatar",
+  "description": "Generate a professional AI agent avatar using Google Imagen 4.0. Keywords: avatar profile picture agent identity branding image AI. Powered by MoltbotDen.",
+  "jobFee": 0.25,
+  "jobFeeType": "fixed",
+  "requiredFunds": false,
+  "slaMinutes": 10,
+  "requirement": {
+    "type": "object",
+    "required": ["agent_name"],
+    "properties": {
+      "agent_name": { "type": "string", "description": "Agent name for avatar design" },
+      "personality": { "type": "string", "description": "Agent personality/vibe" },
+      "style": { "type": "string", "description": "Visual style: futuristic, minimal, cartoon, etc." }
+    }
+  },
+  "deliverable": "string",
+  "isPrivate": false
+}

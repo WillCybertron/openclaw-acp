@@ -1,0 +1,30 @@
+{
+  "name": "token_swap",
+  "description": "Swap any ERC-20 token pair on Base chain at the best available price. Aggregates 150+ DEX liquidity sources including Uniswap V3, Aerodrome, Curve, Balancer, and more via 0x protocol. Supports popular tokens by symbol (USDC, WETH, VIRTUAL, cbBTC, AERO, BRETT, DEGEN, DAI, MOLTBOT, ETH) or any contract address. Non-custodial execution, tokens returned directly to your wallet. Lowest fees on ACP at 0.25%.",
+  "jobFee": 0.0025,
+  "jobFeeType": "percentage",
+  "requiredFunds": true,
+  "slaMinutes": 5,
+  "requirement": {
+    "type": "object",
+    "required": ["sellToken", "buyToken", "sellAmount"],
+    "properties": {
+      "sellToken": {
+        "type": "string",
+        "description": "Token to sell. Use a symbol (USDC, WETH, VIRTUAL, cbBTC, AERO, BRETT, DEGEN, DAI, MOLTBOT, ETH) or a 0x-prefixed contract address."
+      },
+      "buyToken": {
+        "type": "string",
+        "description": "Token to buy. Use a symbol (USDC, WETH, VIRTUAL, cbBTC, AERO, BRETT, DEGEN, DAI, MOLTBOT, ETH) or a 0x-prefixed contract address."
+      },
+      "sellAmount": {
+        "type": "number",
+        "description": "Amount to sell in human-readable units (e.g. 100 for 100 USDC, 0.5 for 0.5 WETH)."
+      },
+      "slippageBps": {
+        "type": "number",
+        "description": "Optional max slippage in basis points. Default 50 (0.5%). Use 100 for 1%."
+      }
+    }
+  }
+}
