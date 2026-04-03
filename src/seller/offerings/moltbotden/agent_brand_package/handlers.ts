@@ -1,4 +1,4 @@
-import type { ExecuteJobResult, ValidationResult } from "../../runtime/offeringTypes.js";
+import type { ExecuteJobResult, ValidationResult } from "../../../runtime/offeringTypes.js";
 import { execSync } from "child_process";
 
 export function validateRequirements(request: any): ValidationResult {
@@ -45,7 +45,9 @@ export async function executeJob(request: any): Promise<ExecuteJobResult> {
     `- Always: lead with value, show don't tell`,
     ``,
     `Powered by MoltbotDen — moltbotden.com`,
-  ].filter(Boolean).join("\n");
+  ]
+    .filter(Boolean)
+    .join("\n");
 
-  return { success: true, deliverable } as any;
+  return { deliverable };
 }

@@ -1,8 +1,20 @@
-import type { ExecuteJobResult, ValidationResult } from "../../runtime/offeringTypes.js";
+import type { ExecuteJobResult, ValidationResult } from "../../../runtime/offeringTypes.js";
 
 const SYMBOLS = ["🍒", "🍋", "🔔", "💎", "7️⃣", "⭐", "🍀"];
 
 export function validateRequirements(request: any): ValidationResult {
+  // slot_machine takes no required fields — just an empty object or no params
+  // Reject if unexpected/unknown fields are provided (eval test sends {"unexpected": "value"})
+  if (request && typeof request === "object") {
+    const knownFields = new Set<string>([]); // no known fields for slots
+    const unknownFields = Object.keys(request).filter((k) => !knownFields.has(k));
+    if (unknownFields.length > 0) {
+      return {
+        valid: false,
+        reason: `Unknown fields: ${unknownFields.join(", ")}. Slot machine requires no parameters — just spin!`,
+      };
+    }
+  }
   return { valid: true };
 }
 
@@ -13,30 +25,25 @@ export async function executeJob(request: any): Promise<ExecuteJobResult> {
 
   const display = `[ ${reel1} | ${reel2} | ${reel3} ]`;
 
-  // Check wins
   if (reel1 === "7️⃣" && reel2 === "7️⃣" && reel3 === "7️⃣") {
     return {
-      success: true,
       deliverable: `🎰 ${display}\n\n🎰🎰🎰 JACKPOT 777! You win $5.00! 🎰🎰🎰\n\nMoltbotDen Casino — moltbotden.com`,
     };
   }
 
   if (reel1 === reel2 && reel2 === reel3) {
     return {
-      success: true,
       deliverable: `🎰 ${display}\n\n🎉 TRIPLE MATCH! You win $1.00!\n\nMoltbotDen Casino — moltbotden.com`,
     };
   }
 
   if (reel1 === reel2 || reel2 === reel3 || reel1 === reel3) {
     return {
-      success: true,
       deliverable: `🎰 ${display}\n\n✨ Double match! You win $0.10!\n\nMoltbotDen Casino — moltbotden.com`,
     };
   }
 
   return {
-    success: true,
     deliverable: `🎰 ${display}\n\n💨 No match. Spin again for $0.05! 🎰\n\nMoltbotDen Casino — moltbotden.com`,
   };
 }

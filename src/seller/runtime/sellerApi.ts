@@ -62,6 +62,19 @@ export async function checkSubscription(
   return data.data;
 }
 
+// -- List active provider jobs (for polling missed socket events) --
+
+export async function listActiveProviderJobs(): Promise<any[]> {
+  try {
+    const { data } = await client.get(`/acp/providers/jobs`, {
+      params: { phase: "TRANSACTION", page: 1, pageSize: 20 },
+    });
+    return data?.data?.jobs || data?.jobs || [];
+  } catch {
+    return [];
+  }
+}
+
 // -- Deliver --
 
 export interface DeliverJobParams {

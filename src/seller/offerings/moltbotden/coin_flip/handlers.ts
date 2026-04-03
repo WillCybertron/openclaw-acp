@@ -1,4 +1,4 @@
-import type { ExecuteJobResult, ValidationResult } from "../../runtime/offeringTypes.js";
+import type { ExecuteJobResult, ValidationResult } from "../../../runtime/offeringTypes.js";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { join } from "path";
 
@@ -37,18 +37,18 @@ export async function executeJob(request: any): Promise<ExecuteJobResult> {
   const call = (request?.playerChoice || request?.call || "heads").toLowerCase().trim();
   const result = Math.random() < 0.5 ? "heads" : "tails";
   const won = call === result;
-  
+
   const pool = getPool();
   pool.total_flips++;
-  
+
   // 30% of each $1 fee goes to jackpot pool
-  pool.pool += 0.30;
-  
+  pool.pool += 0.3;
+
   // Check jackpot
   const jackpotRoll = Math.random();
   let jackpotWin = "";
   let jackpotAmount = 0;
-  
+
   if (jackpotRoll < 0.00024) {
     // MEGA JACKPOT — 0.024% chance, 90% of pool
     jackpotAmount = Math.floor(pool.pool * 0.9 * 100) / 100;
@@ -62,19 +62,17 @@ export async function executeJob(request: any): Promise<ExecuteJobResult> {
     pool.last_jackpot = new Date().toISOString();
     jackpotWin = `\n\n🥉 MINI JACKPOT! You won $${jackpotAmount} from the jackpot pool!`;
   }
-  
+
   savePool(pool);
-  
+
   const poolInfo = `\n\n💰 Current Jackpot Pool: $${pool.pool.toFixed(2)} | Total Flips: ${pool.total_flips}`;
-  
+
   if (won) {
     return {
-      success: true,
       deliverable: `🎉 WINNER! You called ${call} and it was ${result}! You win $1.70!${jackpotWin}${poolInfo}\n\nPlay again anytime! 🎰 MoltbotDen Casino — moltbotden.com`,
     };
   } else {
     return {
-      success: true,
       deliverable: `😢 You called ${call} but it was ${result}. Better luck next time!${jackpotWin}${poolInfo}\n\nTry again — fortune favors the bold! 🎰 MoltbotDen Casino — moltbotden.com`,
     };
   }

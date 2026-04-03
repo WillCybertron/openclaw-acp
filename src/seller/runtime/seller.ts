@@ -8,7 +8,13 @@
 // =============================================================================
 
 import { connectAcpSocket } from "./acpSocket.js";
-import { acceptOrRejectJob, requestPayment, deliverJob, checkSubscription } from "./sellerApi.js";
+import {
+  acceptOrRejectJob,
+  requestPayment,
+  deliverJob,
+  checkSubscription,
+  listActiveProviderJobs,
+} from "./sellerApi.js";
 import { loadOffering, listOfferings } from "./offerings.js";
 import { AcpJobPhase, type AcpJobEventData } from "./types.js";
 import type { ExecuteJobResult } from "./offeringTypes.js";
@@ -50,6 +56,11 @@ function setupCleanupHandlers(): void {
 
 const ACP_URL = process.env.ACP_SOCKET_URL || "https://acpx.virtuals.io";
 let agentDirName: string = "";
+
+// Track jobs we've already processed (delivered or attempted) to avoid duplicates
+const processedTransactionJobs = new Set<number>();
+// Track jobs we've accepted and called requestPayment for (awaiting TRANSACTION)
+const pendingTransactionJobs = new Set<number>();
 
 // -- Job handling --
 
@@ -95,7 +106,7 @@ async function handleNewTask(data: AcpJobEventData): Promise<void> {
   console.log(`         context=${JSON.stringify(data.context)}`);
   console.log(`${"=".repeat(60)}`);
 
-  // Step 1: Accept / reject
+  // Step 1: Accept / reject — run entirely async to not block other events
   if (data.phase === AcpJobPhase.REQUEST) {
     if (!data.memoToSign) {
       return;
@@ -107,118 +118,133 @@ async function handleNewTask(data: AcpJobEventData): Promise<void> {
       return;
     }
 
-    const offeringName = resolveOfferingName(data);
-    const requirements = resolveServiceRequirements(data);
+    // Process in background immediately so we don't block other socket events
+    setImmediate(async () => {
+      const offeringName = resolveOfferingName(data);
+      const requirements = resolveServiceRequirements(data);
 
-    if (!offeringName) {
-      await acceptOrRejectJob(jobId, {
-        accept: false,
-        reason: "Invalid offering name",
-      });
-      return;
-    }
-
-    try {
-      const { config, handlers } = await loadOffering(offeringName, agentDirName);
-
-      if (handlers.validateRequirements) {
-        const validationResult = await handlers.validateRequirements(requirements);
-
-        let isValid: boolean;
-        let reason: string | undefined;
-
-        if (typeof validationResult === "boolean") {
-          isValid = validationResult;
-          reason = isValid ? undefined : "Validation failed";
-        } else {
-          isValid = validationResult.valid;
-          reason = validationResult.reason;
-        }
-
-        if (!isValid) {
-          const rejectionReason = reason || "Validation failed";
-          console.log(
-            `[seller] Validation failed for offering "${offeringName}" — rejecting: ${rejectionReason}`
-          );
-          await acceptOrRejectJob(jobId, {
-            accept: false,
-            reason: rejectionReason,
-          });
-          return;
-        }
+      if (!offeringName) {
+        await acceptOrRejectJob(jobId, {
+          accept: false,
+          reason: "Invalid offering name",
+        });
+        return;
       }
 
-      await acceptOrRejectJob(jobId, {
-        accept: true,
-        reason: "Job accepted",
-      });
+      try {
+        const { config, handlers } = await loadOffering(offeringName, agentDirName);
 
-      // Run normal payment flow for all jobs
-      const funds =
-        config.requiredFunds && handlers.requestAdditionalFunds
-          ? await handlers.requestAdditionalFunds(requirements)
-          : undefined;
+        if (handlers.validateRequirements) {
+          const validationResult = await handlers.validateRequirements(requirements);
 
-      const paymentReason = handlers.requestPayment
-        ? await handlers.requestPayment(requirements)
-        : (funds?.content ?? "Request accepted");
+          let isValid: boolean;
+          let reason: string | undefined;
 
-      // For subscription jobs, check status and append to content
-      let content = paymentReason;
-      if (isSubscriptionJob(data)) {
-        const subCheck = await checkSubscription(
-          data.clientAddress,
-          data.providerAddress,
-          offeringName
-        );
+          if (typeof validationResult === "boolean") {
+            isValid = validationResult;
+            reason = isValid ? undefined : "Validation failed";
+          } else {
+            isValid = validationResult.valid;
+            reason = validationResult.reason;
+          }
 
-        if (subCheck.needsSubscriptionPayment && subCheck.tier) {
-          console.log(
-            `[seller] Job ${jobId} requires subscription payment for tier "${subCheck.tier.name}"`
-          );
-          content = `${paymentReason}\nSubscription required: ${subCheck.tier.name} (${subCheck.tier.price} USDC for ${subCheck.tier.duration} days)`;
-        } else {
-          console.log(`[seller] Job ${jobId} — valid subscription, proceeding`);
-          content = `${paymentReason}\nSubscription active`;
+          if (!isValid) {
+            const rejectionReason = reason || "Validation failed";
+            console.log(
+              `[seller] Validation failed for offering "${offeringName}" — rejecting: ${rejectionReason}`
+            );
+            await acceptOrRejectJob(jobId, {
+              accept: false,
+              reason: rejectionReason,
+            });
+            return;
+          }
         }
-      }
 
-      await requestPayment(jobId, {
-        content,
-        payableDetail: funds
-          ? {
-              amount: funds.amount,
-              tokenAddress: funds.tokenAddress,
-              recipient: funds.recipient,
-            }
-          : undefined,
-      });
-    } catch (err) {
-      console.error(`[seller] Error processing job ${jobId}:`, err);
-    }
+        await acceptOrRejectJob(jobId, {
+          accept: true,
+          reason: "Job accepted",
+        });
+
+        // Run normal payment flow for all jobs
+        const funds =
+          config.requiredFunds && handlers.requestAdditionalFunds
+            ? await handlers.requestAdditionalFunds(requirements)
+            : undefined;
+
+        const paymentReason = handlers.requestPayment
+          ? await handlers.requestPayment(requirements)
+          : (funds?.content ?? "Request accepted");
+
+        // For subscription jobs, check status and append to content
+        let content = paymentReason;
+        if (isSubscriptionJob(data)) {
+          const subCheck = await checkSubscription(
+            data.clientAddress,
+            data.providerAddress,
+            offeringName
+          );
+
+          if (subCheck.needsSubscriptionPayment && subCheck.tier) {
+            console.log(
+              `[seller] Job ${jobId} requires subscription payment for tier "${subCheck.tier.name}"`
+            );
+            content = `${paymentReason}\nSubscription required: ${subCheck.tier.name} (${subCheck.tier.price} USDC for ${subCheck.tier.duration} days)`;
+          } else {
+            console.log(`[seller] Job ${jobId} — valid subscription, proceeding`);
+            content = `${paymentReason}\nSubscription active`;
+          }
+        }
+
+        await requestPayment(jobId, {
+          content,
+          payableDetail: funds
+            ? {
+                amount: funds.amount,
+                tokenAddress: funds.tokenAddress,
+                recipient: funds.recipient,
+              }
+            : undefined,
+        });
+        pendingTransactionJobs.add(jobId);
+      } catch (err) {
+        console.error(`[seller] Error processing job ${jobId}:`, err);
+      }
+    });
+    return;
   }
 
-  // Handle TRANSACTION (deliver)
+  // Handle TRANSACTION (deliver) — non-blocking, fire and forget
   if (data.phase === AcpJobPhase.TRANSACTION) {
+    if (processedTransactionJobs.has(jobId)) {
+      console.log(`[seller] Job ${jobId} already processed — skipping duplicate TRANSACTION`);
+      return;
+    }
+    processedTransactionJobs.add(jobId);
+    pendingTransactionJobs.delete(jobId);
+
     const offeringName = resolveOfferingName(data);
     const requirements = resolveServiceRequirements(data);
 
     if (offeringName) {
-      try {
-        const { handlers } = await loadOffering(offeringName, agentDirName);
-        console.log(
-          `[seller] Executing offering "${offeringName}" for job ${jobId} (TRANSACTION phase)...`
-        );
-        const result: ExecuteJobResult = await handlers.executeJob(requirements);
+      // Execute in background so we don't block other incoming events
+      setImmediate(async () => {
+        try {
+          const { handlers } = await loadOffering(offeringName, agentDirName);
+          console.log(
+            `[seller] Executing offering "${offeringName}" for job ${jobId} (TRANSACTION phase)...`
+          );
+          const result: ExecuteJobResult = await handlers.executeJob(requirements);
 
-        await deliverJob(jobId, {
-          deliverable: result.deliverable,
-          payableDetail: result.payableDetail,
-        });
-        console.log(`[seller] Job ${jobId} — delivered.`);
-      } catch (err) {
-        console.error(`[seller] Error delivering job ${jobId}:`, err);
-      }
+          await deliverJob(jobId, {
+            deliverable: result.deliverable,
+            payableDetail: result.payableDetail,
+          });
+          console.log(`[seller] Job ${jobId} — delivered.`);
+        } catch (err) {
+          console.error(`[seller] Error delivering job ${jobId}:`, err);
+        }
+      });
     } else {
       console.log(`[seller] Job ${jobId} in TRANSACTION but no offering resolved — skipping`);
     }
@@ -273,6 +299,57 @@ async function main() {
   });
 
   console.log("[seller] Seller runtime is running. Waiting for jobs...\n");
+
+  // Poll for missed TRANSACTION events every 10 seconds
+  // This catches jobs where socket event was lost during reconnect
+  setInterval(async () => {
+    if (pendingTransactionJobs.size === 0) return;
+    try {
+      const activeJobs = await listActiveProviderJobs();
+      for (const job of activeJobs) {
+        const jobId = job.id;
+        if (processedTransactionJobs.has(jobId)) continue;
+        // Check if this job is in TRANSACTION phase and we're the provider
+        if (job.phase === AcpJobPhase.TRANSACTION || job.phase === 2) {
+          console.log(
+            `[seller][poll] Found unprocessed TRANSACTION job ${jobId} — processing via poll fallback`
+          );
+          processedTransactionJobs.add(jobId);
+          pendingTransactionJobs.delete(jobId);
+          // Build minimal event data to process
+          const fakeEventData: AcpJobEventData = {
+            id: jobId,
+            phase: AcpJobPhase.TRANSACTION,
+            clientAddress: job.clientAddress || "",
+            providerAddress: job.providerAddress || walletAddress,
+            evaluatorAddress: job.evaluatorAddress || "",
+            price: job.price || 0,
+            memos:
+              job.memos ||
+              job.memoHistory?.map((m: any) => ({
+                id: 0,
+                content: m.content,
+                nextPhase:
+                  m.nextPhase === "NEGOTIATION"
+                    ? AcpJobPhase.NEGOTIATION
+                    : m.nextPhase === "TRANSACTION"
+                      ? AcpJobPhase.TRANSACTION
+                      : m.nextPhase === "EVALUATION"
+                        ? AcpJobPhase.EVALUATION
+                        : 0,
+              })) ||
+              [],
+            context: {},
+          };
+          handleNewTask(fakeEventData).catch((err) =>
+            console.error(`[seller][poll] Error handling polled job ${jobId}:`, err)
+          );
+        }
+      }
+    } catch (err) {
+      // Silently ignore poll errors
+    }
+  }, 10000);
 }
 
 main().catch((err) => {

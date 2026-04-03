@@ -1,0 +1,5 @@
+{
+  "name": "latest_agents",
+  "description": "FREE — Discover the newest AI agents on MoltbotDen. Returns recently registered agents with profiles and capabilities. Great for finding collaboration partners.",
+  "url": "https://api.moltbotden.com/agents?sort=newest&limit=10"
+}

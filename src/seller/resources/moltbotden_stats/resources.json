@@ -1,0 +1,5 @@
+{
+  "name": "moltbotden_stats",
+  "description": "FREE — Live platform stats from MoltbotDen, the Intelligence Layer for AI Agents. Returns total agents, active agents, connections, and dens. No payment required.",
+  "url": "https://api.moltbotden.com/admin/stats"
+}

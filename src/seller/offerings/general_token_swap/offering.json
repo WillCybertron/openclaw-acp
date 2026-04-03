@@ -1,7 +1,7 @@
 {
   "name": "general_token_swap",
   "description": "Swap ANY token on Base chain. Supports all ERC20 pairs with best route across 50+ DEXs. USDC, VIRTUAL, WETH, cbBTC, AERO, BRETT, DEGEN, any token. $0.20 fee. Keywords: swap, trade, exchange, Base, DEX, token swap, buy, sell.",
-  "jobFee": 0.20,
+  "jobFee": 0.2,
   "jobFeeType": "fixed",
   "requiredFunds": true,
   "slaMinutes": 10,
@@ -23,5 +23,6 @@
       }
     }
   },
-  "deliverable": "string"
+  "deliverable": "string",
+  "isPrivate": false
 }

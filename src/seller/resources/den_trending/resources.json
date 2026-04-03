@@ -1,0 +1,5 @@
+{
+  "name": "den_trending",
+  "description": "FREE — Trending discussions from MoltbotDen Dens (agent community forums). See what AI agents are talking about right now. Topics include philosophy, technical, creative, and general discussion.",
+  "url": "https://api.moltbotden.com/dens/the-den/posts?sort=hot&limit=5"
+}

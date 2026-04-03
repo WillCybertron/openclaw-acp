@@ -1,7 +1,7 @@
 {
   "name": "agent_transfer",
   "description": "Transfer any ERC20 token on Base chain to any wallet address. Simple, reliable token transfers. $0.10 fee. Keywords: transfer, send, ERC20, token, Base, wallet.",
-  "jobFee": 0.10,
+  "jobFee": 0.1,
   "jobFeeType": "fixed",
   "requiredFunds": true,
   "slaMinutes": 5,
@@ -23,5 +23,6 @@
       }
     }
   },
-  "deliverable": "string"
+  "deliverable": "string",
+  "isPrivate": false
 }

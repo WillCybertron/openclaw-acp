@@ -7,7 +7,8 @@
   "slaMinutes": 5,
   "requirement": {
     "type": "object",
-    "properties": {}
+    "properties": {},
+    "additionalProperties": false
   },
   "deliverable": "string",
   "isPrivate": false
